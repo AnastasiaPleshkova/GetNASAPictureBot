@@ -1,5 +1,6 @@
 package ru.pleshkova.GetNASAPictureBot.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
+@Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
     private final BotConfig botConfig;
@@ -37,9 +39,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         System.out.println(update);
+
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
+            log.info("Receive from user "+ chatId + " : " + messageText);
             if (messageText.equals("/start")) {
                 startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
             } else if (messageText.equals("/pic")) {
@@ -63,21 +67,26 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setText(textToSend);
         try {
             execute(message);
+            log.info("Reply to user: " + textToSend);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Error occurred during sending message: " + e.getMessage());
         }
     }
 
     private void sendDayPicture(long chatId, String day)  {
-        try {
-        LocalDateTime timeFromClient = LocalDate.parse(day, formatterFromClient).atStartOfDay();
-        if (timeFromClient.isBefore(LocalDateTime.now())) {
-            sendDayPicture(chatId, timeFromClient);
-        } else {
-            sendMessage(chatId, "Нельзя получить картинку из будущего");
-        }
+        try { LocalDateTime timeFromClient = LocalDate.parse(day, formatterFromClient).atStartOfDay();
+            if (timeFromClient.isBefore(LocalDateTime.now())) {
+                sendDayPicture(chatId, timeFromClient);
+            } else {
+                sendMessage(chatId, "Нельзя получить картинку из будущего");
+                log.info("User " + chatId + " enter future data: " + day + ". Today is " + LocalDateTime.now());
+            }
         } catch (DateTimeParseException exception) {
             sendMessage(chatId, "Некорректно введено число");
+            log.info("User enter wrong data: " + exception.getMessage());
+        } catch (Exception generalException) {
+            log.info("Unknown mistake during parsing data: " + generalException.getMessage());
+            sendMessage(chatId, "Неизвестная ошибка");
         }
     }
 
