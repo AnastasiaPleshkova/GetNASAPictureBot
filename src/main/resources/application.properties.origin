@@ -1,2 +1,4 @@
 telegramBotName=
 telegramBotToken=
+nasa.key=
+nasa.url=https://api.nasa.gov/planetary/apod?api_key=
