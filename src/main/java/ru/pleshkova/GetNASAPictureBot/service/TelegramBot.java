@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 @Component
@@ -20,7 +21,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final NasaService nasaService;
     private final DateTimeFormatter formatterFromClient = DateTimeFormatter.ofPattern("ddMMyyyy", Locale.ENGLISH);
     private final DateTimeFormatter formatterToClient = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ENGLISH);
-    private final static DateTimeFormatter formatterToNasa = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
     @Autowired
     public TelegramBot(BotConfig botConfig, NasaService nasaService) {
         this.botConfig = botConfig;
@@ -53,7 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
     private void startCommandReceived(long chatId, String name){
         String answer = "Привет, " + name +"! Чтобы получить сегодняшнюю картинку дня пришли /pic \n" +
-                "Если хочешь получить картинку другого дня пришли сообщение в формате /picYYYY-MM-DD. Например, /pic2023-06-17";
+                "Если хочешь получить картинку другого дня пришли сообщение в формате, например, /pic17062023";
         sendMessage(chatId, answer);
     }
 
@@ -69,8 +69,16 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void sendDayPicture(long chatId, String day)  {
-        String textToSend = "Картинка дня " + day + " : \n " + nasaService.getNasaUrl(day);
-        sendMessage(chatId, textToSend);
+        try {
+        LocalDateTime timeFromClient = LocalDate.parse(day, formatterFromClient).atStartOfDay();
+        if (timeFromClient.isBefore(LocalDateTime.now())) {
+            sendDayPicture(chatId, timeFromClient);
+        } else {
+            sendMessage(chatId, "Нельзя получить картинку из будущего");
+        }
+        } catch (DateTimeParseException exception) {
+            sendMessage(chatId, "Некорректно введено число");
+        }
     }
 
     private void sendDayPicture(long chatId, LocalDateTime day)  {

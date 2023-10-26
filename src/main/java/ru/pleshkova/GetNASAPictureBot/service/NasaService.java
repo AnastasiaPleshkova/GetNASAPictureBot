@@ -28,19 +28,15 @@ public class NasaService {
     }
 
     public String getNasaUrl(LocalDateTime day) {
-        return getNasaUrl(day.format(formatterToNasa));
-    }
-
-    public String getNasaUrl(String day) {
         String mainAnswer;
         CloseableHttpClient client = HttpClients.createDefault();
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            CloseableHttpResponse response = client.execute(new HttpGet(nasaConfig.getNasaUrl()+nasaConfig.getNasaKey()+"&date="+day));
+            CloseableHttpResponse response = client.execute(new HttpGet(nasaConfig.getNasaUrl()+nasaConfig.getNasaKey()+"&date="+day.format(formatterToNasa)));
             NasaAnswer answer = objectMapper.readValue(response.getEntity().getContent(), NasaAnswer.class);
-            System.out.println(answer.toString());
+//            System.out.println(answer.toString());
 //            CloseableHttpResponse imageResponse = client.execute(new HttpGet(answer.getUrl()));
-////            String imageName = answer.getTitle().chars().filter(Character::isLetterOrDigit)
+//            String imageName = answer.getTitle().chars().filter(Character::isLetterOrDigit)
 //                    .limit(30).mapToObj(i -> String.valueOf((char) i))
 //                    .collect(Collectors.joining());
 //            if (answer.getMedia_type().equals("image")) {
