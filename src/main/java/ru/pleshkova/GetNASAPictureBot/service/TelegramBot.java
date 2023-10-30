@@ -1,5 +1,6 @@
 package ru.pleshkova.GetNASAPictureBot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pleshkova.GetNASAPictureBot.config.BotConfig;
 import ru.pleshkova.GetNASAPictureBot.model.User;
@@ -29,7 +32,7 @@ import java.util.Locale;
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final BotConfig botConfig;
     private final NasaService nasaService;
     private final DateTimeFormatter formatterFromClient = DateTimeFormatter.ofPattern("ddMMyyyy", Locale.ENGLISH);
@@ -39,6 +42,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.botConfig = botConfig;
         this.nasaService = nasaService;
         this.userRepository = userRepository;
+        getListCommandsMenu();
+    }
+
+    private void getListCommandsMenu() {
         List<BotCommand> listCommands = new ArrayList<>();
         listCommands.add(new BotCommand("/start", "Начать работу"));
         listCommands.add(new BotCommand("/pic", "Показать картинку дня"));
@@ -50,6 +57,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error during adding bot commands: " + e.getMessage());
         }
     }
+
     @Override
     public String getBotUsername() {
         return botConfig.getBotName();
@@ -74,14 +82,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                     startCommandReceived(chatId, userName);}
                 case "/pic" -> sendDayPicture(chatId, today);
                 case "/description" -> sendDescriptionOfDayPicture(chatId, today);
-                case "/info" -> sendMessage(chatId, "Чтобы получить сегодняшнюю картинку дня пришли /pic \n" +
-                        " Чтобы получить описание к картинке дня пришли /description \n" +
-                        "Если хочешь получить картинку другого дня пришли сообщение в формате, например, /pic17062023");
+                case "/info" -> helpCommandReceived(chatId);
                 default -> {
                     if (messageText.startsWith("/pic")) {
                         sendDayPicture(chatId, messageText.replaceFirst("/pic", ""));
                     } else {
-                        sendMessage(chatId, "Прости, я такого не умею");
+                        sendMessage(chatId, "Прости, я такого не умею", getGeneralKeyboard());
                     }
                 }
             }
@@ -106,15 +112,24 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String name){
-        String answer = "Привет, " + name +"! Чтобы получить сегодняшнюю картинку дня пришли /pic \n" +
-                "Больше информации в /info";
-        sendMessage(chatId, answer);
+        String answer = EmojiParser.parseToUnicode("Привет, " + name +"! :blush:");
+        sendMessage(chatId, answer, getGeneralKeyboard());
     }
 
-    private void sendMessage(long chatId, String textToSend)  {
+    private void helpCommandReceived(long chatId) {
+        sendMessage(chatId, """
+                Чтобы получить сегодняшнюю картинку дня пришли /pic\s
+                Чтобы получить описание к картинке дня пришли /description\s
+                Если хочешь получить картинку другого дня пришли сообщение в формате, например, /pic17062023""", getGeneralKeyboard());
+    }
+
+
+
+    private void sendMessage(long chatId, String textToSend, ReplyKeyboardMarkup keyboardMarkup)  {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
+        message.setReplyMarkup(keyboardMarkup);
         try {
             execute(message);
             log.info("Reply to user: " + textToSend);
@@ -124,30 +139,46 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void sendDayPicture(long chatId, String day)  {
+
         try { LocalDateTime timeFromClient = LocalDate.parse(day, formatterFromClient).atStartOfDay();
             if (timeFromClient.isBefore(LocalDateTime.now())) {
                 sendDayPicture(chatId, timeFromClient);
             } else {
-                sendMessage(chatId, "Нельзя получить картинку из будущего");
+                sendMessage(chatId, "Нельзя получить картинку из будущего", getGeneralKeyboard());
                 log.info("User " + chatId + " enter future data: " + day + ". Today is " + LocalDateTime.now());
             }
         } catch (DateTimeParseException exception) {
-            sendMessage(chatId, "Некорректно введено число");
+            sendMessage(chatId, "Некорректно введено число", getGeneralKeyboard());
             log.info("User enter wrong data: " + exception.getMessage());
         } catch (Exception generalException) {
             log.info("Unknown mistake during parsing data: " + generalException.getMessage());
-            sendMessage(chatId, "Неизвестная ошибка");
+            sendMessage(chatId, "Неизвестная ошибка", getGeneralKeyboard());
         }
     }
 
     private void sendDayPicture(long chatId, LocalDateTime day)  {
         String textToSend = "Картинка дня " + day.format(formatterToClient) + " : \n " + nasaService.getNasaDayUrl(day);
-        sendMessage(chatId, textToSend);
+        sendMessage(chatId, textToSend, getGeneralKeyboard());
     }
 
     private void sendDescriptionOfDayPicture(long chatId, LocalDateTime day)  {
         String textToSend = "Описание к картинке дня " + day.format(formatterToClient) + " : \n " + nasaService.getNasaDayDesc(day);
-        sendMessage(chatId, textToSend);
+        sendMessage(chatId, textToSend, getGeneralKeyboard());
+    }
+
+    private ReplyKeyboardMarkup getGeneralKeyboard() {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        keyboardMarkup.setResizeKeyboard(true);
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add("/pic");
+        row.add("/description");
+        keyboardRows.add(row);
+        row = new KeyboardRow();
+        row.add("/info");
+        keyboardRows.add(row);
+        keyboardMarkup.setKeyboard(keyboardRows);
+        return keyboardMarkup;
     }
 
 }
