@@ -6,12 +6,17 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pleshkova.GetNASAPictureBot.config.BotConfig;
+import ru.pleshkova.GetNASAPictureBot.model.User;
+import ru.pleshkova.GetNASAPictureBot.model.UserRepository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -24,14 +29,16 @@ import java.util.Locale;
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
+    private UserRepository userRepository;
     private final BotConfig botConfig;
     private final NasaService nasaService;
     private final DateTimeFormatter formatterFromClient = DateTimeFormatter.ofPattern("ddMMyyyy", Locale.ENGLISH);
     private final DateTimeFormatter formatterToClient = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ENGLISH);
     @Autowired
-    public TelegramBot(BotConfig botConfig, NasaService nasaService) {
+    public TelegramBot(BotConfig botConfig, NasaService nasaService, UserRepository userRepository) {
         this.botConfig = botConfig;
         this.nasaService = nasaService;
+        this.userRepository = userRepository;
         List<BotCommand> listCommands = new ArrayList<>();
         listCommands.add(new BotCommand("/start", "Начать работу"));
         listCommands.add(new BotCommand("/pic", "Показать картинку дня"));
@@ -62,7 +69,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             LocalDateTime today = LocalDateTime.ofEpochSecond(update.getMessage().getDate(), 0, ZoneOffset.UTC);
 
             switch (messageText) {
-                case "/start" -> startCommandReceived(chatId, userName);
+                case "/start" -> {
+                    registerUser(update.getMessage());
+                    startCommandReceived(chatId, userName);}
                 case "/pic" -> sendDayPicture(chatId, today);
                 case "/description" -> sendDescriptionOfDayPicture(chatId, today);
                 case "/info" -> sendMessage(chatId, "Чтобы получить сегодняшнюю картинку дня пришли /pic \n" +
@@ -78,6 +87,24 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
+
+    private void registerUser(Message message) {
+        if (userRepository.findById(message.getChatId()).isEmpty()){
+            Long chatId = message.getChatId();
+            Chat chat = message.getChat();
+            User user = new User();
+
+            user.setChatId(chatId);
+            user.setFirstName(chat.getFirstName());
+            user.setLastName(chat.getLastName());
+            user.setUserName(chat.getUserName());
+            user.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
+
+            userRepository.save(user);
+            log.info("user saved " + user);
+        }
+    }
+
     private void startCommandReceived(long chatId, String name){
         String answer = "Привет, " + name +"! Чтобы получить сегодняшнюю картинку дня пришли /pic \n" +
                 "Больше информации в /info";
