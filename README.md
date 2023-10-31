@@ -13,13 +13,13 @@
 </p>
 #### If you select /today, bot will send you day picture
  <p align="center">
-  <img width="200" height="250" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/pictureOfDay.jpeg">
+  <img width="300" height="350" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/pictureOfDay.jpeg">
 </p>
 #### If you select /desc(day) or /description then choose the day? bot will send you a description of day picture in English
  <p align="center">
-  <img width="150" height="200" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/desc.jpeg">
+  <img width="350" height="400" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/desc.jpeg">
 </p>
 #### After description there is a inline button which can translate text to Russian
 <p align="center">
-  <img width="100" height="150" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/descTrans.jpeg">
+  <img width="400" height="500" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/descTrans.jpeg">
 </p>
