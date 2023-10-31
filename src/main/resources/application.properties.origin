@@ -1,9 +1,11 @@
 #tg
 telegramBotName=
 telegramBotToken=
+
 #nasa
 nasa.key=
 nasa.url=
+
 #db
 spring.jpa.hibernate.ddl-auto=
 spring.datasource.url=
@@ -12,5 +14,6 @@ spring.datasource.password=
 spring.datasource.driver-class-name=
 spring.jpa.database-platform=
 spring.jpa.show-sql=
+
 #translator
 translator.url=
