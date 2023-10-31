@@ -1,4 +1,16 @@
+#tg
 telegramBotName=
 telegramBotToken=
+#nasa
 nasa.key=
-nasa.url=https://api.nasa.gov/planetary/apod?api_key=
+nasa.url=
+#db
+spring.jpa.hibernate.ddl-auto=
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.driver-class-name=
+spring.jpa.database-platform=
+spring.jpa.show-sql=
+#translator
+translator.url=
