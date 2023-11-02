@@ -33,6 +33,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     protected final static String TRANSLATE_BUTTON = "TRANSLATE_BUTTON";
     protected final static String REPLY_TO_USER = "Reply to user: ";
 
+    protected final static String ERROR_OCCURRED = "Error occurred";
     @Autowired
     public TelegramBot(BotConfig botConfig, NasaService nasaService, UserRegisterService userRegisterService,
                        KeyboardGenerator keyboardGenerator, DataTimeConverter dataTimeConverter, TranslatorService translatorService) {
@@ -132,7 +133,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
             log.info(REPLY_TO_USER + textToSend);
         } catch (TelegramApiException e) {
-            log.error("Error occurred during sending message: " + e.getMessage());
+            log.error(ERROR_OCCURRED + e.getMessage());
         }
     }
 
@@ -142,7 +143,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
             log.info(REPLY_TO_USER + textToSend);
         } catch (TelegramApiException e) {
-            log.error("Error occurred during sending message: " + e.getMessage());
+            log.error(ERROR_OCCURRED + e.getMessage());
         }
     }
 
@@ -187,9 +188,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setMessageId((int) messageId);
         try {
             execute(message);
-            log.info("Reply to user: " + text);
+            log.info(REPLY_TO_USER + text);
         } catch (TelegramApiException e) {
-            log.error("Error occurred during sending message: " + e.getMessage());
+            log.error(ERROR_OCCURRED + e.getMessage());
         }
     }
     private void getListCommandsMenu() {
@@ -201,7 +202,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             this.execute(new SetMyCommands(listCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-            log.error("Error during adding bot commands: " + e.getMessage());
+            log.error(ERROR_OCCURRED + e.getMessage());
         }
     }
 
