@@ -16,7 +16,7 @@
   <img width="400" height="850" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/pictureOfDay.jpeg">
 </p>
 
-* If you select /desc(day) or /description then choose the day? bot will send you a description of day picture in English
+* If you select /desc(day) or /description, then choose the day, bot will send you a description of day picture in English
  <p align="center">
   <img width="400" height="850" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/desc.jpeg">
 </p>
