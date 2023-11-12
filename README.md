@@ -12,6 +12,7 @@
   <img width="400" height="850" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/selectPicture.jpeg">
 </p>
 
+
 * If you select /today, bot will send you day picture
  <p align="center">
   <img width="400" height="850" src="https://github.com/AnastasiaPleshkova/GetNASAPictureBot/blob/main/src/main/resources/screenshots/pictureOfDay.jpeg">
