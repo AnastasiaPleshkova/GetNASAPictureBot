@@ -27,7 +27,7 @@ public class DataTimeConverter {
         } catch (Exception generalException) {
             log.info("Unknown mistake during parsing data: " + generalException.getMessage());
         }
-        return Optional.of(timeFromClient);
+        return Optional.ofNullable(timeFromClient);
     }
 
     public String convertToClientTime(LocalDateTime day) {

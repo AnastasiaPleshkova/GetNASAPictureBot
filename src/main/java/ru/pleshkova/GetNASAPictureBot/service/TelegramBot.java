@@ -150,14 +150,17 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendAnotherDayPicture(long chatId, String day)  {
         Optional<LocalDateTime> timeFromClient = dataTimeConverter.convertStringToLDT(day);
         if (timeFromClient.isPresent()){
-            if (timeFromClient.get().isBefore(LocalDateTime.now())){
-                sendDayPicture(chatId, timeFromClient.get());
+            if (timeFromClient.get().isBefore(LocalDateTime.of(1995,9, 1,0,0))) {
+                sendMessage(chatId, "Слишком далекое прошлое. Выбери дату посвежее, начиная с 01.09.1995", keyboardGenerator.getDayKeyboard());
+                log.info("User " + chatId + " enter data: " + day + ". It's further than 01.01.1800");
+            } else if (timeFromClient.get().isBefore(LocalDateTime.now())){
+                    sendDayPicture(chatId, timeFromClient.get());
             } else {
                 sendMessage(chatId, "Нельзя получить данные из будущего", keyboardGenerator.getDayKeyboard());
                 log.info("User " + chatId + " enter future data: " + day + ". Today is " + LocalDateTime.now());
             }
         } else {
-            sendMessage(chatId, "Ошибка чтения числа", keyboardGenerator.getDayKeyboard());
+            sendMessage(chatId, "Введена некорректная дата", keyboardGenerator.getDayKeyboard());
         }
     }
     private void sendDayPicture(long chatId, LocalDateTime day)  {
